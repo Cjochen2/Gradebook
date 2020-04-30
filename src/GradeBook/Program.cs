@@ -17,10 +17,10 @@ namespace GradeBook
             {
                 results += number;
 
-                results = results/grades.Count;
+                results /= grades.Count;
             }
 
-            Console.WriteLine(results);
+            Console.WriteLine($"The average grade is {results:N1}");
 
             if (args.Length > 0)
             {
