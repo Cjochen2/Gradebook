@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GradeBook
 {
-    class Book
+    public class Book
     {
         /* This is an explicit constructor method. It needs to have the same name as the class and no return type */
         public Book(string name)
