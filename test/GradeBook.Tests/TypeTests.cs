@@ -6,7 +6,7 @@ namespace GradeBook.Tests
     public class TypeTests
     {
         [Fact]
-        public void Test1()
+        public void ValueTypesAlsoPassByValue()
         {
             // Arrange Section: Sets test data and objects you are going to use for testing
             var x = GetInt();
@@ -71,6 +71,25 @@ namespace GradeBook.Tests
 
             // Assert Section: evaluate the action against the expected output
             Assert.Equal("New Name", book1.Name);
+        }
+
+        [Fact]
+        public void StringsBehaveLikeValueTypes()
+        {
+            // Arrange Section: Sets test data and objects you are going to use for testing
+            string name = "Curtis";
+            var upper = MakeUppercase(name);
+
+            // Act Section: Perform and action such as a calculation
+
+            // Assert Section: evaluate the action against the expected output
+            Assert.Equal("Curtis", name);
+            Assert.Equal("CURTIS", upper);
+        }
+
+        private string MakeUppercase(string name)
+        {
+            return name.ToUpper();
         }
 
         [Fact]
