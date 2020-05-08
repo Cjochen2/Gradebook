@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace GradeBook
 {
+
+    public delegate void GradeAddedDelegate(object sender, EventArgs args);
+
     public class Book
     {
         /* This is an explicit constructor method. It needs to have the same name as the class and no return type */
@@ -12,7 +15,7 @@ namespace GradeBook
             Name = name;
         }
 
-        public void AddLetterGrade(char letter)
+        public void AddGrade(char letter)
         {
             switch (letter)
             {
@@ -39,6 +42,12 @@ namespace GradeBook
             if (grade <= 100 && grade >= 0)
             {
                 grades.Add(grade);
+
+                if(GradeAdded !=  null)
+                {
+                    GradeAdded(this, new EventArgs());
+                }
+
             }
             else
             {
@@ -46,6 +55,8 @@ namespace GradeBook
             }
 
         }
+
+        public event GradeAddedDelegate GradeAdded;
 
         public Statistics GetStatistics()
         {
@@ -108,11 +119,11 @@ namespace GradeBook
                     var num = double.Parse(input);
                     AddGrade(num);
                 }
-                catch(ArgumentException ex)
+                catch (ArgumentException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
-                catch(FormatException ex)
+                catch (FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -124,6 +135,14 @@ namespace GradeBook
         }
 
         private List<double> grades;
-        public string Name;
+
+        public string Name
+        {
+            get;
+            set;
+
+        }
+
+        public const string CATEGORY = "Science";
     }
 }
