@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 namespace GradeBook
@@ -6,10 +7,84 @@ namespace GradeBook
 
     public delegate void GradeAddedDelegate(object sender, EventArgs args);
 
-    public class Book
+    public class NamedObject
+    {
+        public NamedObject(string name)
+        {
+            Name = name;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+    }
+
+    public interface IBook
+    {
+        void AddGrade(double grade);
+        Statistics GetStatistics();
+        string Name { get; }
+        event GradeAddedDelegate GradeAdded;
+    }
+
+    /************************** Below is Book is the class type, NamedObject is the base class C# allows 1, and IBook is the interface C# allows multiple *************************************/
+    public abstract class Book : NamedObject, IBook
+    {
+        public Book(string name) : base(name)
+        {
+        }
+
+        public abstract event GradeAddedDelegate GradeAdded;
+
+        public abstract void AddGrade(double grade);
+
+        public abstract Statistics GetStatistics();
+    }
+
+    public class DiskBook : Book
+    {
+        public DiskBook(string name) : base(name)
+        {
+        }
+
+        public override event GradeAddedDelegate GradeAdded;
+
+        public override void AddGrade(double grade)
+        {
+            using (var writer = File.AppendText($"{Name}.txt"))
+            {
+                writer.WriteLine(grade);
+                if(GradeAdded != null)
+                {
+                    GradeAdded(this, new EventArgs());
+                }
+            }
+        }
+
+        public override Statistics GetStatistics()
+        {
+            var result = new Statistics();
+
+            using(var reader = File.OpenText($"{Name}.txt"))
+            {
+                var line = reader.ReadLine();
+                while(line != null)
+                {
+                    var number = double.Parse(line);
+                    result.Add(number);
+                    line = reader.ReadLine();
+                }
+            }
+            return result;
+        }
+    }
+
+    public class InMemoryBook : Book
     {
         /* This is an explicit constructor method. It needs to have the same name as the class and no return type */
-        public Book(string name)
+        public InMemoryBook(string name) : base(name)
         {
             grades = new List<double>();
             Name = name;
@@ -37,13 +112,13 @@ namespace GradeBook
             }
         }
 
-        public void AddGrade(double grade)
+        public override void AddGrade(double grade)
         {
             if (grade <= 100 && grade >= 0)
             {
                 grades.Add(grade);
 
-                if(GradeAdded !=  null)
+                if (GradeAdded != null)
                 {
                     GradeAdded(this, new EventArgs());
                 }
@@ -56,9 +131,9 @@ namespace GradeBook
 
         }
 
-        public event GradeAddedDelegate GradeAdded;
+        public override event GradeAddedDelegate GradeAdded;
 
-        public Statistics GetStatistics()
+        public override Statistics GetStatistics()
         {
             var results = new Statistics();
             results.High = double.MinValue;
@@ -66,83 +141,12 @@ namespace GradeBook
 
             for (var index = 0; index < grades.Count; index++)
             {
-                results.High = Math.Max(grades[index], results.High);
-                results.Low = Math.Min(grades[index], results.Low);
-                results.Average += grades[index];
-            }
-
-            results.Average /= grades.Count;
-
-            switch (results.Average)
-            {
-                case var d when d >= 90.0:
-                    results.Letter = 'A';
-                    break;
-
-                case var d when d >= 80.0:
-                    results.Letter = 'B';
-                    break;
-
-                case var d when d >= 70.0:
-                    results.Letter = 'C';
-                    break;
-
-                case var d when d >= 60.0:
-                    results.Letter = 'D';
-                    break;
-
-                default:
-                    results.Letter = 'F';
-                    break;
+                results.Add(grades[index]);          
             }
 
             return results;
         }
 
-        public void GradeEntry()
-        {
-            var check = true;
-
-            while (check == true)
-            {
-                Console.WriteLine("Please Enter a Numerical grade value or press 'q' to exit");
-                var input = Console.ReadLine();
-
-                if (input == "q")
-                {
-                    check = false;
-                    continue;
-                }
-
-                try
-                {
-                    var num = double.Parse(input);
-                    AddGrade(num);
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                catch (FormatException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    Console.WriteLine("**********");
-                }
-            }
-        }
-
         private List<double> grades;
-
-        public string Name
-        {
-            get;
-            set;
-
-        }
-
-        public const string CATEGORY = "Science";
     }
 }
